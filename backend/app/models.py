@@ -17,6 +17,13 @@ class User(db.Model):
 
     logs = db.relationship("SymptomLog", backref="user", lazy="dynamic")
     reports = db.relationship("AIReport", backref="user", lazy="dynamic")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "created_at": self.created_at.isoformat()
+        }
     
 
 class SymptomLog(db.Model):
@@ -47,6 +54,7 @@ class SymptomLog(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "date": self.date.isoformat(),
             "pain_level": self.pain_level,
             "fatigue_level": self.fatigue_level,
@@ -67,7 +75,7 @@ class AIReport(db.Model):
     )
 
     period_start = db.Column(db.Date, nullable=False)
-    period_start = db.Column(db.Date, nullable=False)
+    period_end = db.Column(db.Date, nullable=False)
 
     content = db.Column(db.Text, nullable=False)
 
