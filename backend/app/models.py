@@ -6,22 +6,17 @@ db = SQLAlchemy()
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(db.String(255), unique=True, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+
     created_at = db.Column(
         db.DateTime,
         default=lambda: datetime.now(timezone.utc)
     )
 
-    logs = db.relationship("AIReport", backref="user", lazy="dynamic")
+    logs = db.relationship("SymptomLog", backref="user", lazy="dynamic")
     reports = db.relationship("AIReport", backref="user", lazy="dynamic")
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "email": self.email,
-            "created_at": self.created_at.isoformat()
-        }
     
 
 class SymptomLog(db.Model):
@@ -62,7 +57,7 @@ class SymptomLog(db.Model):
         }
     
 class AIReport(db.Model):
-    __table,ame__ = "ai_reports"
+    __tablename__ = "ai_reports"
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
