@@ -6,13 +6,6 @@ from .models import db, SymptomLog
 
 logs_bp = Blueprint("logs", __name__)
 
-@logs_bp.route("/", methods=["GET"])
-def get_logs():
-    return jsonify({
-        "message": "Liste des symptômes",
-        "logs": []
-    })
-
 def get_current_user_id():
     return int(get_jwt_identity())
 
@@ -146,3 +139,51 @@ def delete_log(log_id):
     return jsonify({"message": "Log supprimé"}), 200
 
 
+# get /logs/stats 
+
+@logs_bp.route("/stats", methods=["GET"])
+@jwt_required()
+def get_stats():
+    user_id = get_current_user_id()
+    days = request.args.get("days", 30, type=int)
+
+    from datetime import timedelta
+    cutoff = date.today() - timedelta(days=days)
+
+    logs = SymptomLog.query.filter(
+        SymptomLog.user_id == user_id,
+        SymptomLog.date >= cutoff
+    ).order_by(SymptomLog.date.asc()).all()
+
+    if not logs:
+        return jsonify({
+            "averages": None,
+            "daily": [],
+            "total_logs": 0
+        }), 200
+    
+    total = len(logs)
+    avg_pain = round(sum(l.pain_level for l in logs) / total, 1)
+    avg_fatigue = round(sum(l.fatigue_level for l in logs) / total, 1)
+    avg_mood = round(sum(l.mood_level for l in logs) / total, 1)
+
+    daily = [
+        {
+            "date": log.date.isoformat(),
+            "pain": log.pain_level,
+            "fatigue": log.fatigue_level,
+            "mood": log.mood_level,
+        }
+        for log in logs
+    ]
+
+    return jsonify({
+        "averages": {
+            "pain": avg_pain,
+            "fatigue": avg_fatigue,
+            "mood": avg_mood,
+        },
+        "daily": daily,
+        "total_logs": total,
+        "period_days": days,
+    }), 200
