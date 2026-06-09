@@ -88,7 +88,7 @@ def get_logs():
 
 # get /logs/:id detail d'un log
 
-@logs_bp.route("/", methods=["GET"])
+@logs_bp.route("/<int:log_id>", methods=["GET"])
 @jwt_required()
 def get_log(log_id):
     user_id = get_current_user_id()
@@ -99,7 +99,7 @@ def get_log(log_id):
 
 # put /logs/:id modifier un log
 
-@logs_bp.route("/", methods=["PUT"])
+@logs_bp.route("/<int:log_id>", methods=["PUT"])
 @jwt_required()
 def update_log(log_id):
     user_id = get_current_user_id()
@@ -124,10 +124,10 @@ def update_log(log_id):
     db.session.commit()
     return jsonify({"message": "Log mis à jour", "log": log.to_dict()}), 200
 
-# delete /logs/:id 
+# delete /logs/:id
 
-@logs_bp.route("/", methods=["DELETE"])
-@jwt_required
+@logs_bp.route("/<int:log_id>", methods=["DELETE"])
+@jwt_required()
 def delete_log(log_id):
     user_id = get_current_user_id()
     log = SymptomLog.query.filter_by(
